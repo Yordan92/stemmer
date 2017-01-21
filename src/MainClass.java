@@ -2,11 +2,13 @@
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,13 +31,22 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 public class MainClass {
 	
 	public static void main(String[] args) throws Exception {
-		File f = new File(args[0]);
+		File files = new File("offers");
+		File outputFile = new File("outputOffers");
+			
+		for(File f : files.listFiles()) {
+			stemFile(f,outputFile);
+		}
+		 
+	}
+
+	private static void stemFile(File inputFile, File outputFileDir) throws Exception, IOException, UnsupportedEncodingException, FileNotFoundException {
 		Stemmer stem = new Stemmer();
 		stem.loadStemmingRules("stem_rules_context_2_UTF-8.txt");
 		
 		 Analyzer analyzer = new StandardAnalyzer();
 		 StringBuffer stemmedFile = new StringBuffer(); 
-		 Files.readAllLines(f.toPath()).stream().forEach(line -> {
+		 Files.readAllLines(inputFile.toPath()).stream().forEach(line -> {
 			 TokenStream ts = analyzer.tokenStream("", new StringReader(line));	
 			   try {
 			    ts.reset();
@@ -50,13 +61,12 @@ public class MainClass {
 				e.printStackTrace();
 			}
 		 });
-		 File outputFile = new File(f.getName() + "_stemmed.txt");
-		 outputFile.createNewFile();
+		File outputFile = new File(outputFileDir.getAbsolutePath() + File.separator + inputFile.getName() + "_stemmed.txt");
+		outputFile.createNewFile();
 		BufferedWriter bf = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
 		bf.write(stemmedFile.toString());
 		bf.close();
 		System.out.println("Finish!!!");
-		 
 	}
 
 }
